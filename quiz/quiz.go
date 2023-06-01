@@ -9,13 +9,6 @@ import (
 	"time"
 )
 
-func setTimerSeconds() time.Duration {
-	var timer = flag.Int("timer", 30, "Set countdown timer")
-	flag.Parse()
-	log.Printf("Countdown timer was set to %v", *timer)
-	return time.Duration(*timer) * time.Second
-}
-
 func setFilePath() string {
 	var filePath = flag.String("file", "", "File path")
 	flag.Parse()
@@ -51,35 +44,36 @@ func readCsvFile(filePath string) [][]string {
 func main() {
 	message := "Hello, this is abi's quiz program"
 	fmt.Println(message)
-	time_limit_seconds := setTimerSeconds()
-	fmt.Println(time_limit_seconds)
-	//start := time.Now()
+	timeLimit := flag.Int("limit", 30, "Set a time limit in seconds to complete the quiz")
 	filepath := setFilePath()
 	records := readCsvFile(filepath)
+	timer := time.NewTimer(time.Second * time.Duration(*timeLimit))
 	total_questions := 10
-	wrong_answers := 0
+	correct_answers := 0
 	//elapsed_time_seconds := 0
 	i := 0
-	// tick once per second
-	for range time.Tick(1 * time.Second) {
-		time_limit_seconds -= 1 * time.Second
-		fmt.Println(time_limit_seconds)
-		//end := time.Now()
-		//remainingTime := end.Sub(time_limit_seconds)
-		//fmt.Println(remainingTime)
+	answerChannel := make(chan string)
+	for i < total_questions {
 		question := records[i][0]
 		correct_answer := records[i][1]
 		i++
 		fmt.Println("Question:", question)
-		fmt.Println("Your answer: ")
-		var answer string
-		fmt.Scanln(&answer)
-		if answer != correct_answer {
-			wrong_answers++
+		go func() {
+			var answer string
+			fmt.Println("Your answer: ")
+			fmt.Scanln(&answer)
+			answerChannel <- answer
+		}()
+		select {
+		case <-timer.C:
+			return
+		case answer := <-answerChannel:
+			if answer == correct_answer {
+				correct_answers++
+			}
 		}
 	}
 
-	fmt.Printf("You have responded correctly %v/%v times!\n", total_questions-wrong_answers, total_questions)
-	//fmt.Printf("Total time spent was %v seconds!", //elapsed_time_seconds)
+	fmt.Printf("You have responded correctly %v/%v times!\n", correct_answers, total_questions)
 
 }
