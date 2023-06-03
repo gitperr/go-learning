@@ -73,7 +73,7 @@ func main() {
 	}
 	defer file.Close()
 
-	// elves are is in groups of three
+	// elves are in groups of three
 	groupSize := 3
 	elfGroupRucksacks := make([]string, 0, groupSize)
 
