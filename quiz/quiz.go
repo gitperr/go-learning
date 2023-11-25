@@ -45,15 +45,15 @@ func main() {
 	message := "Hello, this is abi's quiz program"
 	fmt.Println(message)
 	timeLimit := flag.Int("limit", 30, "Set a time limit in seconds to complete the quiz")
+	questionLimit := flag.Int("questionlimit", 30, "Set a question count.")
 	filepath := setFilePath()
 	records := readCsvFile(filepath)
 	timer := time.NewTimer(time.Second * time.Duration(*timeLimit))
-	total_questions := 10
 	correct_answers := 0
 	//elapsed_time_seconds := 0
-	i := 0
 	answerChannel := make(chan string)
-	for i < total_questions {
+	i := 0
+	for i < *questionLimit {
 		question := records[i][0]
 		correct_answer := records[i][1]
 		i++
@@ -74,6 +74,6 @@ func main() {
 		}
 	}
 
-	fmt.Printf("You have responded correctly %v/%v times!\n", correct_answers, total_questions)
+	fmt.Printf("You have responded correctly %v/%v times!\n", correct_answers, *questionLimit)
 
 }
