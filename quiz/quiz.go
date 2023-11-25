@@ -59,7 +59,7 @@ func main() {
 		i++
 		fmt.Println("Question:", question)
 		go func() {
-			var answer string
+			var answer strings
 			fmt.Println("Your answer: ")
 			fmt.Scanln(&answer)
 			answerChannel <- answer
