@@ -10,7 +10,7 @@ import (
 )
 
 func gameParser(line string) int {
-	// parse a line and return bool (possible/impossible) and the game ID
+	// parse a line and return power of minimum required color cube counts
 	// this slice will be updated with the highest available count in the round of color cubes
 	colorsAndHighestCount := map[string]int{
 		"red":   0,
