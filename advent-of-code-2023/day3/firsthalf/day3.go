@@ -8,207 +8,166 @@ import (
 	"strings"
 )
 
+func isSymbol(char string) bool {
+	//fmt.Println("Checking if char", char, "contains special stuff. Result->", strings.Contains("*%&$#+-?@=/", char))
+	return strings.Contains("*%&$#+-?@=/", char)
+}
+
+func lookLeft(matrix [][]string, i int, x int) string {
+	//fmt.Println("values passed:", i, x)
+	if matrix[i][x] == "X" {
+		return "end"
+	}
+	return matrix[i][x-1]
+}
+
+func lookTopLeft(matrix [][]string, i int, x int) string {
+	//fmt.Println("values passed:", i, x)
+	if i == 0 || x == 0 {
+		return "end"
+	}
+	return matrix[i-1][x-1]
+}
+
+func lookTop(matrix [][]string, i int, x int) string {
+	if i == 0 || x == len(matrix)-1 {
+		return "end"
+	}
+	return matrix[i-1][x]
+}
+
+func lookTopRight(matrix [][]string, i int, x int) string {
+	if i == 0 || x == len(matrix)-1 {
+		return "end"
+	}
+	return matrix[i-1][x+1]
+}
+
+func lookBotLeft(matrix [][]string, i int, x int) string {
+	if i == 0 || x == len(matrix)-1 || x == 0 {
+		return "end"
+	}
+	return matrix[i+1][x-1]
+}
+
+func lookBot(matrix [][]string, i int, x int) string {
+	if i == 0 || x == len(matrix)-1 {
+		return "end"
+	}
+	return matrix[i+1][x]
+}
+
+func lookBotRight(matrix [][]string, i int, x int) string {
+	if i == 0 || x == len(matrix)-1 || matrix[i][x] == "X" {
+		return "end"
+	}
+	return matrix[i+1][x+1]
+}
+
+func convertToInt(columnString string) int {
+	//fmt.Println("Number passed is:", columnString)
+	if columnString != "" {
+		number, err := strconv.Atoi(columnString)
+		if err != nil {
+			panic(err)
+		}
+		return number
+	} else {
+		return 0
+	}
+}
+
+func doesPerimeterContainSymbol(columnPerimeter []string) bool {
+	// check the perimeter for symbol
+	// if any symbol is found, instantly return true
+	// otherwise, always assume we could not find a symbol and return false
+	for _, value := range columnPerimeter {
+		if isSymbol(value) {
+			//fmt.Println("Checking value", value)
+			//fmt.Println("Perimeter contains symbol! Returning true")
+			return true
+		}
+	}
+	return false
+}
+
 func matrixNumberDetector(matrix [][]string) int {
 	//fmt.Println("matrix given:", matrix)
 	total := 0
 	symbolFound := false
 	numberRegex := regexp.MustCompile("[0-9]+")
 	//symbolRegex := regexp.MustCompile(`[^a-zA-Z0-9.]`)
-	symbolRegex := strings.Contains("$*#+@")
 	foundNumber := ""
-
 	for i, row := range matrix {
 		for x, column := range row {
+			// set column perimeter to empty for clean lookup
+			var columnPerimeter []string
 			// if we found a number, start concatenating it
-			if numberRegex.FindAllString(column, -1) != nil {
-				foundNumber = foundNumber + column
-				// matrix[i][x] is our current location which is a number
-				// if we haven't already found a symbol, start the lookup
-				fmt.Println("row:", i, "column:", x, "Matrix length:", len(matrix))
-				fmt.Println("foundnumber:", foundNumber, "total:", total, "currently at character", matrix[i][x])
-				if !symbolFound {
-					// if we are NOT at the first or last row
-					if i > 0 && x > 0 && i < len(matrix)-2 {
-						//if i-1 > -1 && x-1 > -1 && i < len(matrix)-2 {
-						//fmt.Println("Trying to access", matrix[i-1][x-1])
-						// look diagonally (top left)
-						//fmt.Println("Trying matrix[i-1][x-1]. Current i and x", i, x)
-						if symbolRegex.FindAllString(matrix[i][x-1], -1) != nil && !symbolFound {
-							// if we found symbol, set flag
-							//fmt.Println("Accessed matrix[i-1][x-1]")
-							symbolFound = true
+			if matrix[i][x] != "X" {
+				// fmt.Println("top left:", lookTopLeft(matrix, i, x))
+				// fmt.Println("top:", lookTop(matrix, i, x))
+				// fmt.Println("top right:", lookTopRight(matrix, i, x))
+				// fmt.Println("bot left:", lookBotLeft(matrix, i, x))
+				// fmt.Println("bot:", lookBot(matrix, i, x))
+				// fmt.Println("bot right:", lookBotRight(matrix, i, x))
+				//fmt.Println("Current foundNumber is", foundNumber)
+				//fmt.Println("columnValue is", column)
+				if numberRegex.FindAllString(column, -1) != nil {
+					foundNumber = foundNumber + column
+					// start the look around and construct a perimeter slice
+					columnPerimeter = append(columnPerimeter, lookLeft(matrix, i, x))
+					columnPerimeter = append(columnPerimeter, lookTopLeft(matrix, i, x))
+					columnPerimeter = append(columnPerimeter, lookTop(matrix, i, x))
+					columnPerimeter = append(columnPerimeter, lookTopRight(matrix, i, x))
+					columnPerimeter = append(columnPerimeter, lookBotLeft(matrix, i, x))
+					columnPerimeter = append(columnPerimeter, lookBot(matrix, i, x))
+					columnPerimeter = append(columnPerimeter, lookBotRight(matrix, i, x))
+					// check for symbol in the perimeter
+					//fmt.Println("columnPerimeter is:", columnPerimeter, "starting lookup!")
+					if symbolFound {
+						if len(foundNumber) > 1 {
+							continue
+						} else {
+							symbolFound = doesPerimeterContainSymbol(columnPerimeter)
 						}
-						if symbolRegex.FindAllString(matrix[i][x+1], -1) != nil && !symbolFound {
-							// if we found symbol, set flag
-							//fmt.Println("Accessed matrix[i-1][x-1]")
-							symbolFound = true
-						}
-						if symbolRegex.FindAllString(matrix[i-1][x-1], -1) != nil && !symbolFound {
-							// if we found symbol, set flag
-							//fmt.Println("Accessed matrix[i-1][x-1]")
-							symbolFound = true
-						}
-						// look above
-						//fmt.Println("Trying matrix[i-1][x]. Current i and x", i, x)
-						if symbolRegex.FindAllString(matrix[i-1][x], -1) != nil && !symbolFound {
-							//fmt.Println("Accessed matrix[i-1][x]")
-							symbolFound = true
-						}
-						// look diagonally (top right)
-						//fmt.Println("Trying matrix[i-1][x+1]. Current i and x", i, x)
-						if symbolRegex.FindAllString(matrix[i-1][x+1], -1) != nil && !symbolFound {
-							//fmt.Println("Accessed matrix[i-1][x+1]")
-							symbolFound = true
-						}
-						// look diagonally (bottom left)
-						//fmt.Println("Trying matrix[i+1][x-1]. Current i and x", i, x, "Current character is", matrix[i][x])
-						if symbolRegex.FindAllString(matrix[i+1][x-1], -1) != nil && !symbolFound {
-							//fmt.Println("Accessed matrix[i+1][x-1]")
-							symbolFound = true
-						}
-						// look below
-						//fmt.Println("Trying matrix[i+1][x]. Current i and x", i, x)
-						if symbolRegex.FindAllString(matrix[i+1][x], -1) != nil && !symbolFound {
-							//fmt.Println("Accessed matrix[i+1][x]")
-							symbolFound = true
-						}
-						// look diagonally (bottom right)
-						//fmt.Println("Trying matrix[i+1][x+1]. Current i and x", i, x)
-						if symbolRegex.FindAllString(matrix[i+1][x+1], -1) != nil && !symbolFound {
-							//fmt.Println("Accessed matrix[i+1][x+1]")
-							symbolFound = true
-						}
-						// if we are at first or last row, we can only look down OR up (NOT BOTH!) depending on where we are
 					} else {
-						// if we are at the first row and first column
-						if i == 0 && x == 0 {
-							if symbolRegex.FindAllString(matrix[i+1][x], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i+1][x+1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
+						symbolFound = doesPerimeterContainSymbol(columnPerimeter)
+					}
+				} else {
+					//fmt.Println("Current foundNumber after if is", foundNumber, "columnValue is:", column)
+					if column == "." || column == "X" {
+						if !symbolFound {
+							//fmt.Println("Symbol was not found, setting", foundNumber, "to", "empty string")
+							foundNumber = ""
+						} else {
+							number := convertToInt(foundNumber)
+							//fmt.Println("Adding", number, "to", total)
+							total = number + total
+							foundNumber = ""
 						}
-						// if we are at first row, and some other column
-						if i == 0 && x != 0 {
-							if symbolRegex.FindAllString(matrix[i][x+1], -1) != nil && !symbolFound {
-								// if we found symbol, set flag
-								//fmt.Println("Accessed matrix[i-1][x-1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i][x-1], -1) != nil && !symbolFound {
-								// if we found symbol, set flag
-								//fmt.Println("Accessed matrix[i-1][x-1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i+1][x], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i+1][x-1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x-1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i+1][x+1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
+						symbolFound = false
+					} else {
+						if !symbolFound {
+							symbolFound = true
 						}
-						// if we are at first row, and last column, we cannot look right, or up
-						if i == 0 && x == -1 {
-							if symbolRegex.FindAllString(matrix[i+1][x-1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x-1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i+1][x], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i][x-1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
-						}
-						// if we are at last row, and first column, we cannot look left, or down
-						if i == len(matrix)-2 && x == 0 {
-							if symbolRegex.FindAllString(matrix[i-1][x], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i-1][x+1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
-						}
-						// if we are at last row and last column, we cannot look right, or down
-						if i == len(matrix)-2 && x == -1 {
-							if symbolRegex.FindAllString(matrix[i-1][x], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i-1][x-1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
-						}
-						// if we are on some other column on last row, look left and right, above...
-						if i == len(matrix)-2 {
-							if symbolRegex.FindAllString(matrix[i-1][x], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i-1][x-1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i-1][x+1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i][x+1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
-							if symbolRegex.FindAllString(matrix[i][x-1], -1) != nil && !symbolFound {
-								//fmt.Println("Accessed matrix[i+1][x+1]")
-								symbolFound = true
-							}
+						number := convertToInt(foundNumber)
+						//fmt.Println("Adding", number, "to", total)
+						total = number + total
+						foundNumber = ""
+						if number != 0 {
+							symbolFound = false
 						}
 					}
 				}
 			} else {
-				// if it was not a dot, we are in luck, because we found a symbol next to the number.
-				// can break the search here and return the number
-				if column != "." && len(foundNumber) > 0 {
-					// reset symbol flag
-					symbolFound = false
-					// add the number to total
-					number, err := strconv.Atoi(foundNumber)
-					if err != nil {
-						fmt.Println("Failed to convert", foundNumber, "to int")
-					}
-					total += number
-					// reset back to empty string
+				// if we have some number left at the end, we need to add it if symbol was found
+				if i == len(matrix)-1 && symbolFound {
+					number := convertToInt(foundNumber)
+					fmt.Println("Adding", number, "to", total)
+					total = number + total
 					foundNumber = ""
-				} else {
-					// if we found a dot, check if symbol flag was set, add to total
-					// etc.
-					//fmt.Println("Found dot, resetting.")
-					if symbolFound && len(foundNumber) > 0 {
-						symbolFound = false
-						number, err := strconv.Atoi(foundNumber)
-						if err != nil {
-							fmt.Println("Error in conversion")
-						}
-						total += number
-						foundNumber = ""
-					} else {
-						foundNumber = ""
-					}
-
 				}
+
 			}
 		}
 	}
@@ -216,24 +175,49 @@ func matrixNumberDetector(matrix [][]string) int {
 }
 
 func main() {
-	//total := 0
 	filePath := "../input.txt"
-	// file, err := os.Open(filePath)
-	// Read content from the file
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
 
-	//line := scanner.Text()
+	contentString := strings.ReplaceAll(string(content), "\r\n", "\n")
+	contentString = strings.ReplaceAll(contentString, "\r", "\n")
 	// Convert content to string and split it into lines
-	lines := strings.Split(string(content), "\n")
-	// Create a 2D matrix
-	matrix := make([][]string, len(lines)+1)
+	lines := strings.Split(string(contentString), "\n")
+
+	// Process each line and wrap it with "X"
 	for i, line := range lines {
-		// Split each line into individual characters
-		matrix[i] = strings.Split(line, "")
+		lines[i] = "X" + line + "X"
 	}
-	total := matrixNumberDetector(matrix)
-	fmt.Println(total)
+	// Add lines full of "X" before and after the first and last lines
+	prefix := strings.Repeat("X", len(lines[1]))
+	lines = append([]string{prefix}, lines...)
+	lines = append(lines, prefix)
+	outputContent := strings.Join(lines, "\n")
+	//fmt.Println(outputContent)
+	// Write the modified content to a new file
+	fixedPath := "fixed_input.txt"
+	err = os.WriteFile(fixedPath, []byte(outputContent), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	content, err = os.ReadFile(fixedPath)
+	if err != nil {
+		panic(err)
+	}
+	contentString = strings.ReplaceAll(string(content), "\r\n", "\n")
+	contentString = strings.ReplaceAll(contentString, "\r", "\n")
+	// Convert content to string and split it into lines
+	lines = strings.Split(string(contentString), "\n")
+	matrix := make([][]string, len(lines))
+	//fmt.Println("line count:", len(lines))
+	for i, line := range lines {
+		//fmt.Println("line num:", i, "is:", line)
+		matrix[i] = strings.Split(line, "")
+
+	}
+
+	fmt.Println(matrixNumberDetector(matrix))
 }
