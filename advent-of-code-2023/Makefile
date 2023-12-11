@@ -10,14 +10,14 @@ else
 endif
 
 ifeq ($(OS),Windows_NT)
-    MKDIR := $(SHELL) -Command New-Item -ItemType Directory
-    NEWFILE := $(SHELL) -Command New-Item -ItemType File
-    ECHO := $(SHELL) -Command Write-Output
+	MKDIR := $(SHELL) -Command New-Item -ItemType Directory
+	NEWFILE := $(SHELL) -Command New-Item -ItemType File
+	ECHO := $(SHELL) -Command Write-Output
 	CURL := curl.exe
 else
-    MKDIR := $(SHELL) mkdir -p
-    NEWFILE := $(SHELL) touch
-    ECHO := $(SHELL) echo
+	MKDIR := $(SHELL) mkdir -p
+	NEWFILE := $(SHELL) touch
+	ECHO := $(SHELL) echo
 	CURL := curl
 endif
 
@@ -53,5 +53,5 @@ download_input:
 ifeq ($(DAY),)
 	$(error DAY is not set. Usage: make download_input DAY=<day_number> cookie=<cookie>)
 endif
-	$(CURL) -H "Cookie: $(COOKIE)" https://adventofcode.com/2023/day/$(DAY)/input -o day$(DAY)/input.txt
+	$(CURL) -H "Cookie: $(cookie)" https://adventofcode.com/2023/day/$(DAY)/input -o day$(DAY)/input.txt
 	@echo "Downloaded input for $(DAY) and saved to $(DAY)/input.txt"
