@@ -13,12 +13,12 @@ ifeq ($(OS),Windows_NT)
     MKDIR := $(SHELL) -Command New-Item -ItemType Directory
     NEWFILE := $(SHELL) -Command New-Item -ItemType File
     ECHO := $(SHELL) -Command Write-Output
-CURL := curl.exe
+	CURL := curl.exe
 else
     MKDIR := $(SHELL) mkdir -p
     NEWFILE := $(SHELL) touch
     ECHO := $(SHELL) echo
-CURL := curl
+	CURL := curl
 endif
 
 ifdef cookie
