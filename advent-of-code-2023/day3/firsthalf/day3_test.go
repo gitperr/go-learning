@@ -1,4 +1,3 @@
-// calculator_test.go
 package main
 
 import (

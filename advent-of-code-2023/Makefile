@@ -1,4 +1,3 @@
-# Makefile
 ifeq ($(OS),Windows_NT)
     SHELL := powershell.exe
 else ifeq ($(shell uname),Linux)
@@ -28,7 +27,6 @@ endif
 .PHONY: all
 all: create_directories mod download_input
 	@echo "Using SHELL: $(SHELL)"
-	# Add your build/test commands here
 
 .PHONY: create_directories
 create_directories:
