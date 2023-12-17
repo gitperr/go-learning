@@ -1,8 +1,6 @@
 ifeq ($(OS),Windows_NT)
     SHELL := powershell.exe
-else ifeq ($(shell uname),Linux)
-    SHELL := bash
-else ifeq ($(shell uname),Darwin)
+else ifeq ($(shell uname),Linux,Darwin)
     SHELL := zsh
 else
     $(error Unsupported operating system)
@@ -14,9 +12,9 @@ ifeq ($(OS),Windows_NT)
 	ECHO := $(SHELL) -Command Write-Output
 	CURL := curl.exe
 else
-	MKDIR := $(SHELL) mkdir -p
-	NEWFILE := $(SHELL) touch
-	ECHO := $(SHELL) echo
+	MKDIR := mkdir -p
+	NEWFILE := touch
+	ECHO := echo
 	CURL := curl
 endif
 
@@ -31,7 +29,7 @@ all: create_directories mod download_input
 .PHONY: create_directories
 create_directories:
 ifeq ($(DAY),)
-	$(error DAY is not set. Usage: make create_directories DAY=<directory_name>)
+	$(error DAY is not set. Usage: make create_directories DAY=<day number e.g. 1,2,3>)
 endif
 	$(MKDIR) day$(DAY)/firsthalf
 	$(MKDIR) day$(DAY)/secondhalf
